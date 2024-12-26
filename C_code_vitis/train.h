@@ -11,6 +11,8 @@
 
 #define POPULATION 1024
 #define MEMORY_ACU_SIZE 10
+#define MAX_NO_IMPRU 10
+
 
 
 void generate_rando_trees(tree_data trees[N_TREES][N_NODE_AND_LEAFS], 

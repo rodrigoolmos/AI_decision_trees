@@ -90,15 +90,16 @@ void mutate_trees(tree_data input_tree[N_TREES][N_NODE_AND_LEAFS],
 
     uint32_t mutation_threshold = mutation_rate * RAND_MAX;
     uint8_t n_feature;
+    uint32_t mutation_value;
     memcpy(output_tree, input_tree, sizeof(tree_data) * N_TREES * N_NODE_AND_LEAFS);
     
     for (uint32_t tree_i = boosting_i * N_BOOSTING; 
                 tree_i < (boosting_i + 1) * N_BOOSTING && tree_i < N_TREES; tree_i++){
 
-        *seed = *seed + tree_i;
-        uint32_t mutation_value = rand_r(seed);
-        if (mutation_value < mutation_threshold){
-            for (uint32_t node_i = 0; node_i < N_NODE_AND_LEAFS - 1; node_i++){
+        for (uint32_t node_i = 0; node_i < N_NODE_AND_LEAFS - 1; node_i++){
+            *seed = *seed + tree_i;
+            mutation_value = rand_r(seed);
+            if (mutation_value < mutation_threshold){
                 *seed = *seed + node_i;
                 output_tree[tree_i][node_i].tree_camps.feature_index = generate_feture_index(n_features, seed);
                 n_feature = output_tree[tree_i][node_i].tree_camps.feature_index;
@@ -194,13 +195,13 @@ void mutate_population(tree_data trees_population[POPULATION][N_TREES][N_NODE_AN
         tree_data local_tree[N_TREES][N_NODE_AND_LEAFS];
         memcpy(local_tree, trees_population[index_elite], sizeof(local_tree));
         int threshold = (int)((POPULATION/8)* population_accuracy[index_elite]);
-        if (index_elite < threshold){
+        if (index_elite < threshold || mutation_factor >= (MEMORY_ACU_SIZE - 2)*0.02){
             tune_nodes(local_tree, trees_population[p], n_features,
-                        1 - population_accuracy[p] + mutation_factor*5,
+                        0.5 + mutation_factor*3,
                         boosting_i, max_features, min_features, &seed);
         }else{
             mutate_trees(local_tree, trees_population[p], n_features,
-                        1 - population_accuracy[p] + mutation_factor,
+                        0.5 + mutation_factor,
                         boosting_i, max_features, min_features, &seed);
         }
         

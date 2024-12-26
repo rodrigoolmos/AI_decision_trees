@@ -206,6 +206,7 @@ int main() {
     struct feature features[MAX_TEST_SAMPLES];
     struct feature features_augmented[MAX_TEST_SAMPLES*10];
     int read_samples;
+    int ite_no_impru = 0;
     uint32_t used_trees = 0;
     int generation_ite = 0;
     srand(clock());
@@ -213,7 +214,7 @@ int main() {
     tree_data trees_population[POPULATION][N_TREES][N_NODE_AND_LEAFS] = {0};
     tree_data golden_tree[N_TREES_IP][N_NODE_AND_LEAFS] = {0};
 
-    char *path ="/home/rodrigo/Documents/AI_neuroral_network/datasets/kaggle/features.csv";
+    char *path ="/home/rodrigo/tfm/datasets/SoA/paper1/diabetes.csv";
 
     printf("Training model %s\n", path);
     int n_features;
@@ -256,7 +257,8 @@ int main() {
             evaluate_model(golden_tree, &features_augmented[read_samples * 80/100], read_samples * 20/100);
             /////////////////////////////////////////////////////////////////////
 
-            if(population_accuracy[0] >= 1 || generation_ite > 100){
+            if(population_accuracy[0] >= 1 || ite_no_impru > MAX_NO_IMPRU){
+                ite_no_impru = 0;
                 break;
             }
 
@@ -274,8 +276,15 @@ int main() {
                     }
                 }
             }
+
+            if (mutation_factor >= (MEMORY_ACU_SIZE - 2)*0.02){
+                ite_no_impru++;
+            }else{
+                ite_no_impru = 0;
+            }
+            
             gettimeofday(&end_train, NULL);
-            printf("Mutation_factor %f\n", mutation_factor);
+            printf("Mutation_factor %f ite_no_impru = %i\n", mutation_factor, ite_no_impru);
             printf("Generation ite %i index ite %i\n", generation_ite, generation_ite % 10);
             printf("Execution trainig %fs\n", (end_predictions.tv_sec - init_predictions.tv_sec) + 
                                         (end_predictions.tv_usec - init_predictions.tv_usec) / 1000000.0);
