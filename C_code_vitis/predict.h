@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#define N_BOOSTING 4
+#define N_BOOSTING 2
 
 #define N_NODE_AND_LEAFS 256            // Adjust according to the maximum number of nodes and leaves in your trees
 #define N_TREES_IP 128                  // Adjust according to the number of trees in your model

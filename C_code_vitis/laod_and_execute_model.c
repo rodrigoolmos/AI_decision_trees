@@ -236,12 +236,6 @@ int main() {
 
         while(1){
             gettimeofday(&init_train, NULL);
-            // if (!(generation_ite % 50)){
-            //     shuffle(features_augmented, read_samples* 80/100);
-            //     for (int accuracy_i = 0; accuracy_i < MEMORY_ACU_SIZE; accuracy_i++){
-            //         iteration_accuracy[accuracy_i] = 0;
-            //     }
-            // }
             gettimeofday(&init_predictions, NULL);
             for (uint32_t p = 0; p < POPULATION; p++)
                 execute_model(trees_population[p], features_augmented, read_samples * 80/100, &population_accuracy[p], 0, &used_trees);
@@ -254,11 +248,15 @@ int main() {
 
             // evaluation features from out the training dataset
             printf("Boosting iteration %i of %i\n", boosting_i, N_TREES / N_BOOSTING);
-            evaluate_model(golden_tree, &features_augmented[read_samples * 80/100], read_samples * 20/100);
+            evaluate_model(golden_tree, &features_augmented[read_samples * 60/100], read_samples * 20/100);
             /////////////////////////////////////////////////////////////////////
 
             if(population_accuracy[0] >= 1 || ite_no_impru > MAX_NO_IMPRU){
                 ite_no_impru = 0;
+                shuffle(features_augmented, read_samples* 80/100);
+                for (int accuracy_i = 0; accuracy_i < MEMORY_ACU_SIZE; accuracy_i++){
+                    iteration_accuracy[accuracy_i] = 0;
+                }
                 break;
             }
 
