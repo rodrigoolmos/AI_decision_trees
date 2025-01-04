@@ -73,7 +73,6 @@ void execute_model(tree_data tree[N_TREES][N_NODE_AND_LEAFS],
 
     int correct = 0;
     int32_t prediction;
-    uint32_t trees_score = 0;
     int32_t burst_size = 1;
     int32_t new_model = 1;
 
@@ -85,15 +84,13 @@ void execute_model(tree_data tree[N_TREES][N_NODE_AND_LEAFS],
     for (int i = 0; i < read_samples; i++){
         memcpy(features_burst, features[i].features, sizeof(float) * N_FEATURE);  
         predict(tree, NULL, features_burst, NULL, &prediction, &burst_size, &new_model, trees_used, 0);
-        if (features[i].prediction == (prediction > 0)){
-            trees_score += abs(prediction);
+        if (features[i].prediction == (prediction >= (*trees_used)/2)){
             correct++;
         }
         new_model = 0;
     }
 
     *accuracy = (float) correct / read_samples;
-    *accuracy += ((0.01*trees_score) / (read_samples * N_TREES));
     if (sow_log)
         printf("Accuracy %f evaluates samples %i correct ones %i\n",
                         1.0 * (*accuracy), read_samples, correct);
