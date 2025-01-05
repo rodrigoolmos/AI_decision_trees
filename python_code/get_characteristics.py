@@ -7,7 +7,7 @@ import seaborn as sns
 def calculate_correlation(file_path):
     """
     Lee un archivo CSV y calcula la correlación de todas las columnas con respecto a la última columna.
-    Asume que el archivo no tiene encabezados explícitos y que todas las filas son datos.
+    También calcula el número de clases y el número de elementos de cada clase en la última columna.
 
     :param file_path: Ruta al archivo CSV.
     :return: None
@@ -30,23 +30,31 @@ def calculate_correlation(file_path):
         print(f"Correlación de las columnas con respecto a la columna {last_column_index}:")
         for col_index, corr_value in correlations.items():
             print(f"Col {col_index:<2} {corr_value:.6f}")
-    
-        print("Valores Nulos")
+        
+        print("\nValores Nulos")
         print(data.isnull().sum())
 
-        print("Valores Duplicados")
+        print("\nValores Duplicados")
         print(data.duplicated().sum())
 
-        print("Caracteristicas")
+        print("\nCaracterísticas")
         print(data.describe())
 
-        sns.pairplot(data=data,hue=data.columns[-1])
+        # Número de clases y elementos por clase
+        print("\nNúmero de Clases y Elementos por Clase")
+        class_counts = data[last_column_index].value_counts()
+        print(f"Número de clases: {class_counts.size}")
+        for class_value, count in class_counts.items():
+            print(f"Clase {class_value}: {count} elementos")
+
+        # Visualización de pares
+        sns.pairplot(data=data, hue=data.columns[-1])
         plt.show()
 
     except Exception as e:
         print(f"Error: {e}")
 
 # Ejemplo de uso
-file_path = "/home/rodrigo/Documents/tfm/datasets/SoA/paper1/haberman.csv"  # Cambiar por la ruta de tu archivo CSV
+file_path = "/home/rodrigo/tfm/datasets/kaggle/multi_class/Student_performance_data.csv"  # Cambiar por la ruta de tu archivo CSV
 print(file_path)
 correlations = calculate_correlation(file_path)

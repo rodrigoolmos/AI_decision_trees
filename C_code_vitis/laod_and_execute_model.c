@@ -84,7 +84,7 @@ void execute_model(tree_data tree[N_TREES][N_NODE_AND_LEAFS],
     for (int i = 0; i < read_samples; i++){
         memcpy(features_burst, features[i].features, sizeof(float) * N_FEATURE);  
         predict(tree, NULL, features_burst, NULL, &prediction, &burst_size, &new_model, trees_used, 0);
-        if (features[i].prediction == (prediction >= (*trees_used)/2)){
+        if (features[i].prediction == (N_CLASS*prediction)/(*trees_used)){
             correct++;
         }
         new_model = 0;
@@ -98,7 +98,8 @@ void execute_model(tree_data tree[N_TREES][N_NODE_AND_LEAFS],
 }
 
 void evaluate_model(tree_data tree[N_TREES][N_NODE_AND_LEAFS], 
-                    struct feature *features, int read_samples){
+                    struct feature *features, int read_samples,
+                    uint32_t *trees_used){
 
     int accuracy = 0;
     int evaluated = 0;
@@ -108,7 +109,6 @@ void evaluate_model(tree_data tree[N_TREES][N_NODE_AND_LEAFS],
     clock_t start_time, end_time;
     double cpu_time_used;
     int32_t new_model = 1;
-    int32_t trees_used = N_TREES_IP;
     start_time = clock();
 
     int ceil_div = (read_samples + MAX_BURST_FEATURES - 1) / MAX_BURST_FEATURES;
@@ -125,10 +125,10 @@ void evaluate_model(tree_data tree[N_TREES][N_NODE_AND_LEAFS],
                 memcpy(features_burst[j], features[i * MAX_BURST_FEATURES + j].features, sizeof(float) *N_FEATURE);
         }
         
-        predict(tree, NULL, features_burst, NULL, prediction, &burst_size, &new_model, &trees_used, 0);
+        predict(tree, NULL, features_burst, NULL, prediction, &burst_size, &new_model, trees_used, 0);
 
         for (int j = 0; j < burst_size; j++){
-            if (features[i * MAX_BURST_FEATURES + j].prediction == (prediction[j] > 0)){
+            if (features[i * MAX_BURST_FEATURES + j].prediction == (N_CLASS*prediction[j])/(*trees_used)){
                 accuracy++;
             }
             evaluated++;
@@ -140,39 +140,6 @@ void evaluate_model(tree_data tree[N_TREES][N_NODE_AND_LEAFS],
     end_time = clock();
     cpu_time_used = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
     //printf("Tiempo de ejecucion por feature: %f segundos\n", cpu_time_used / read_samples);
-    
-    
-    // test ping
-    accuracy = 0;
-    evaluated = 0;
-    burst_size = MAX_BURST_FEATURES;
-    for (int i = 0; i < ceil_div; i++){
-        if (i == ceil_div -1){
-            if (0 != read_samples % MAX_BURST_FEATURES){
-                burst_size = read_samples % MAX_BURST_FEATURES;
-            }
-        }
-
-        for (int j = 0; j < burst_size; j++){
-                memcpy(features_burst[j], features[i * MAX_BURST_FEATURES + j].features, sizeof(float) *N_FEATURE);
-        }
-        
-        predict(tree, features_burst, NULL, prediction, NULL, &burst_size, &new_model, &trees_used, 1);
-
-        for (int j = 0; j < burst_size; j++){
-            if (features[i * MAX_BURST_FEATURES + j].prediction == (prediction[j] > 0)){
-                accuracy++;
-            }
-            evaluated++;
-        }
-        new_model = 0;
-    }
-    // printf("PING!!!!!!\n");
-    // printf("Accuracy %f evaluates samples %i of %i\n", 1.0 * accuracy / read_samples, evaluated, read_samples);
-    end_time = clock();
-    cpu_time_used = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
-    //printf("Tiempo de ejecucion por feature: %f segundos\n\n\n", cpu_time_used / read_samples);
-    
 }
 
 void show_logs(float population_accuracy[POPULATION]){
@@ -205,13 +172,14 @@ int main() {
     int read_samples;
     int ite_no_impru = 0;
     uint32_t used_trees = 0;
+    uint32_t used_trees_test = 0;
     int generation_ite = 0;
     srand(clock());
 
     tree_data trees_population[POPULATION][N_TREES][N_NODE_AND_LEAFS] = {0};
     tree_data golden_tree[N_TREES_IP][N_NODE_AND_LEAFS] = {0};
 
-    char *path ="/home/rodrigo/tfm/datasets/SoA/paper1/diabetes.csv";
+    char *path ="/home/rodrigo/tfm/datasets/kaggle/multi_class/test_motion_mod.csv";
 
     printf("Training model %s\n", path);
     int n_features;
@@ -240,12 +208,13 @@ int main() {
             reorganize_population(population_accuracy, trees_population);
 
             /////////////////////////////// tests ///////////////////////////////
-
             show_logs(population_accuracy);
-
             // evaluation features from out the training dataset
             printf("Boosting iteration %i of %i\n", boosting_i, N_TREES / N_BOOSTING);
-            evaluate_model(golden_tree, &features_augmented[read_samples * 60/100], read_samples * 20/100);
+            used_trees_test = used_trees - N_BOOSTING; // number of trees used on the previous iteration
+            if (used_trees_test > 0){
+                evaluate_model(golden_tree, &features_augmented[read_samples * 80/100], read_samples * 20/100, &used_trees_test);
+            }
             /////////////////////////////////////////////////////////////////////
 
             if(population_accuracy[0] >= 1 || ite_no_impru > MAX_NO_IMPRU){
@@ -287,14 +256,15 @@ int main() {
                                         (end_train.tv_usec - init_train.tv_usec) / 1000000.0);
         }
 
-        for (uint32_t tree_i = 0; tree_i < N_TREES; tree_i++){
+        // coppy the amount of trees trained up to this point
+        for (uint32_t tree_i = 0; tree_i < used_trees; tree_i++){ 
             memcpy(golden_tree[tree_i], trees_population[0][tree_i], sizeof(tree_data) * N_NODE_AND_LEAFS);
         }
     }
     
 
     printf("Final evaluation !!!!\n\n");
-    evaluate_model(golden_tree, &features_augmented[read_samples * 80/100], read_samples * 20/100);
+    evaluate_model(golden_tree, &features_augmented[read_samples * 80/100], read_samples * 20/100, &used_trees);
     return 0;
 
 }

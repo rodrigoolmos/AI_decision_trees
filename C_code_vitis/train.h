@@ -12,6 +12,8 @@
 #define POPULATION 1024
 #define MEMORY_ACU_SIZE 10
 #define MAX_NO_IMPRU 10
+#define N_CLASS 3
+
 
 
 
