@@ -47,6 +47,6 @@ def calculate_correlation(file_path):
         print(f"Error: {e}")
 
 # Ejemplo de uso
-file_path = "/home/rodrigo/Documents/tfm/datasets/SoA/paper1/haberman.csv"  # Cambiar por la ruta de tu archivo CSV
+file_path = "/home/rodrigo/tfm/datasets/SoA/paper1/diabetes.csv"  # Cambiar por la ruta de tu archivo CSV
 print(file_path)
 correlations = calculate_correlation(file_path)

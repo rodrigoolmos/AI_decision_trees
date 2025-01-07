@@ -36,7 +36,9 @@ int augment_features(const struct feature *original_features, int n_features, in
 float generate_random_float(float min, float max, int* seed);
 
 void find_max_min_features(struct feature features[MAX_TEST_SAMPLES],
-                                float max_features[N_FEATURE], float min_features[N_FEATURE]);
+                                float max_features[N_FEATURE], 
+                                float min_features[N_FEATURE],
+                                int read_samples);
 
 void swap_features(struct feature* a, struct feature* b);
 

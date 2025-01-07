@@ -313,14 +313,16 @@ void reorganize_population(float population_accuracy[POPULATION],
 }
 
 void find_max_min_features(struct feature features[MAX_TEST_SAMPLES],
-                                float max_features[N_FEATURE], float min_features[N_FEATURE]) {
+                                float max_features[N_FEATURE], 
+                                float min_features[N_FEATURE],
+                                int read_samples) {
 
     for (int j = 0; j < N_FEATURE; j++) {
         max_features[j] = features[0].features[j];
         min_features[j] = features[0].features[j];
     }
 
-    for (int i = 1; i < MAX_TEST_SAMPLES; i++) {
+    for (int i = 1; i < read_samples; i++) {
         for (int j = 0; j < N_FEATURE; j++) {
             if (features[i].features[j] > max_features[j]) {
                 max_features[j] = features[i].features[j];
