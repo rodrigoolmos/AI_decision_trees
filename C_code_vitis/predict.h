@@ -41,13 +41,3 @@ void predict(uint64_t bram_tree[N_TREES_IP][N_NODE_AND_LEAFS],
             int32_t *load_trees,
             int32_t *trees_used,
             int32_t ping_pong);
-
-float generate_random_float(float min, float max, int* seed);
-
-void find_max_min_features(struct feature features[MAX_TEST_SAMPLES],
-                                float max_features[N_FEATURE], float min_features[N_FEATURE]);
-
-void swap_features(struct feature* a, struct feature* b);
-
-void shuffle(struct feature* array, int n);
-

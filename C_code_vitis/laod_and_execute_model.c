@@ -213,7 +213,7 @@ int main() {
     tree_data trees_population[POPULATION][N_TREES][N_NODE_AND_LEAFS] = {0};
     tree_data golden_tree[N_TREES_IP][N_NODE_AND_LEAFS] = {0};
 
-    char *path ="/home/rodrigo/Documents/tfm/datasets/kaggle/Heart_Attack.csv";
+    char *path ="/home/rodrigo/tfm/datasets/kaggle/diabetes.csv";
 
     printf("Training model %s\n", path);
     int n_features;
@@ -221,7 +221,7 @@ int main() {
     n_features--; // remove predictions
 
     shuffle(features, read_samples);
-    find_max_min_features(features, max_features, min_features);
+    find_max_min_features(features, max_features, min_features, read_samples);
     read_samples = augment_features(features, read_samples, n_features, 
                                     max_features, min_features, features_augmented,
                                     MAX_TEST_SAMPLES*10, 7);
