@@ -3,8 +3,7 @@
 #define N_BOOSTING 2
 
 #define N_NODE_AND_LEAFS 256            // Adjust according to the maximum number of nodes and leaves in your trees
-#define N_TREES_IP 64                  // Adjust according to the number of trees in your model
-#define N_TREES N_TREES_IP
+#define N_TREES 128                     // Adjust according to the number of trees in your model
 #define N_FEATURE 32                    // Adjust according to the number of features in your model
 #define MAX_BURST_FEATURES 256          // Adjust according to the number burst features
 #define MAX_TEST_SAMPLES 30000
@@ -32,7 +31,7 @@ typedef union {
     uint64_t compact_data;
 } tree_data;
 
-void predict(uint64_t bram_tree[N_TREES_IP][N_NODE_AND_LEAFS],
+void predict(uint64_t bram_tree[N_TREES][N_NODE_AND_LEAFS],
             float bram_features_ping[MAX_BURST_FEATURES][N_FEATURE],
             float bram_features_pong[MAX_BURST_FEATURES][N_FEATURE], 
             int32_t prediction_ping[MAX_BURST_FEATURES],
@@ -41,13 +40,4 @@ void predict(uint64_t bram_tree[N_TREES_IP][N_NODE_AND_LEAFS],
             int32_t *load_trees,
             int32_t *trees_used,
             int32_t ping_pong);
-
-float generate_random_float(float min, float max, int* seed);
-
-void find_max_min_features(struct feature features[MAX_TEST_SAMPLES],
-                                float max_features[N_FEATURE], float min_features[N_FEATURE]);
-
-void swap_features(struct feature* a, struct feature* b);
-
-void shuffle(struct feature* array, int n);
 

@@ -131,7 +131,7 @@ def main():
             'metric': 'binary_error',
             'boosting_type': 'gbdt',
             'num_leaves': 256,
-            'num_trees': 8,
+            'num_trees': 128,
             'learning_rate': 0.1,
             'feature_fraction': 0.9,
         }

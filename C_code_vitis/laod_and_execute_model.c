@@ -164,8 +164,8 @@ int main() {
     float population_accuracy[POPULATION] = {0};
     float iteration_accuracy[MEMORY_ACU_SIZE] = {0};
     float mutation_factor = 0;
-    float max_features[N_FEATURE];
-    float min_features[N_FEATURE];
+    float max_features[N_FEATURE] = {0};
+    float min_features[N_FEATURE] = {0};
     
     struct feature features[MAX_TEST_SAMPLES];
     struct feature features_augmented[MAX_TEST_SAMPLES*10];
@@ -177,7 +177,7 @@ int main() {
     srand(clock());
 
     tree_data trees_population[POPULATION][N_TREES][N_NODE_AND_LEAFS] = {0};
-    tree_data golden_tree[N_TREES_IP][N_NODE_AND_LEAFS] = {0};
+    tree_data golden_tree[N_TREES][N_NODE_AND_LEAFS] = {0};
 
     char *path ="/home/rodrigo/tfm/datasets/kaggle/multi_class/test_motion_mod.csv";
 
@@ -186,8 +186,8 @@ int main() {
     read_samples = read_n_features(path, MAX_TEST_SAMPLES, features, &n_features);
     n_features--; // remove predictions
 
+    find_max_min_features(features, max_features, min_features, read_samples);
     shuffle(features, read_samples);
-    find_max_min_features(features, max_features, min_features);
     read_samples = augment_features(features, read_samples, n_features, 
                                     max_features, min_features, features_augmented,
                                     MAX_TEST_SAMPLES*10, 0);
@@ -257,8 +257,13 @@ int main() {
         }
 
         // coppy the amount of trees trained up to this point
-        for (uint32_t tree_i = 0; tree_i < used_trees; tree_i++){ 
+        for (uint32_t tree_i = 0; tree_i < used_trees; tree_i++){
             memcpy(golden_tree[tree_i], trees_population[0][tree_i], sizeof(tree_data) * N_NODE_AND_LEAFS);
+        }
+        for (uint32_t p = 1; p < POPULATION; p++){
+            for (uint32_t tree_i = 0; tree_i < N_TREES; tree_i++){
+                memcpy(trees_population[p][tree_i], trees_population[0][tree_i], sizeof(tree_data) * N_NODE_AND_LEAFS);
+            }
         }
     }
     

@@ -55,6 +55,6 @@ def calculate_correlation(file_path):
         print(f"Error: {e}")
 
 # Ejemplo de uso
-file_path = "/home/rodrigo/tfm/datasets/kaggle/multi_class/Student_performance_data.csv"  # Cambiar por la ruta de tu archivo CSV
+file_path = "/home/rodrigo/tfm/datasets/kaggle/multi_class/test_motion_mod.csv"  # Cambiar por la ruta de tu archivo CSV
 print(file_path)
 correlations = calculate_correlation(file_path)

@@ -34,3 +34,14 @@ int augment_features(const struct feature *original_features, int n_features, in
                      float max_features[N_FEATURE], float min_features[N_FEATURE],
                      struct feature *augmented_features, int max_augmented_features, 
                      int augmentation_factor);
+
+void find_max_min_features(struct feature features[MAX_TEST_SAMPLES],
+                                float max_features[N_FEATURE], 
+                                float min_features[N_FEATURE],
+                                int read_samples);
+
+float generate_random_float(float min, float max, int* seed);
+
+void swap_features(struct feature* a, struct feature* b);
+
+void shuffle(struct feature* array, int n);
