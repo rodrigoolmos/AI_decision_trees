@@ -179,7 +179,7 @@ int main() {
     tree_data trees_population[POPULATION][N_TREES][N_NODE_AND_LEAFS] = {0};
     tree_data golden_tree[N_TREES][N_NODE_AND_LEAFS] = {0};
 
-    char *path ="/home/rodrigo/tfm/datasets/kaggle/multi_class/test_motion_mod.csv";
+    char *path ="/home/rodrigo/tfm/datasets/kaggle/multi_class/WineQT.csv";
 
     printf("Training model %s\n", path);
     int n_features;

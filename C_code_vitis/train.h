@@ -12,10 +12,7 @@
 #define POPULATION 1024
 #define MEMORY_ACU_SIZE 10
 #define MAX_NO_IMPRU 10
-#define N_CLASS 3
-
-
-
+#define N_CLASS 6
 
 void generate_rando_trees(tree_data trees[N_TREES][N_NODE_AND_LEAFS], 
                     uint8_t n_features, uint16_t n_trees, float max_features[N_FEATURE], float min_features[N_FEATURE]);
