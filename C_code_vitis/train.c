@@ -29,9 +29,9 @@ float generate_threshold(float min, float max,int* seed) {
     return random_threshold;
 }
 
-float generate_leaf_value(int *seed) {
+float generate_leaf_value(int *seed, int n_classes){
     //float random_f = ((float) 2 * rand_r(seed) / (float)RAND_MAX) - 1.0;
-    int random_f = (rand_r(seed) % N_CLASS);
+    int random_f = (rand_r(seed) % n_classes);
 
     return random_f;
 }
@@ -49,7 +49,8 @@ uint8_t generate_feture_index(uint8_t feature_length, int *seed) {
 }
 
 void generate_rando_trees(tree_data trees[N_TREES][N_NODE_AND_LEAFS], 
-                    uint8_t n_features, uint16_t boosting_i, float max_features[N_FEATURE], float min_features[N_FEATURE]) {
+                    uint8_t n_features, uint16_t boosting_i, float max_features[N_FEATURE],
+                    float min_features[N_FEATURE], int n_classes) {
 
     srand(clock());
     uint8_t n_feature;
@@ -72,7 +73,7 @@ void generate_rando_trees(tree_data trees[N_TREES][N_NODE_AND_LEAFS],
 
             if (trees[tree_i][node_i].tree_camps.leaf_or_node == 0){
                 trees[tree_i][node_i].tree_camps.float_int_union.i =
-                    generate_leaf_value(&seed);
+                    generate_leaf_value(&seed, n_classes);
             }else{
                 trees[tree_i][node_i].tree_camps.float_int_union.f =
                     generate_threshold(min_features[n_feature], max_features[n_feature], &seed);
@@ -86,7 +87,8 @@ void generate_rando_trees(tree_data trees[N_TREES][N_NODE_AND_LEAFS],
 void mutate_trees(tree_data input_tree[N_TREES][N_NODE_AND_LEAFS], 
                  tree_data output_tree[N_TREES][N_NODE_AND_LEAFS],
                  uint8_t n_features, float mutation_rate, 
-                 uint32_t boosting_i, float max_features[N_FEATURE], float min_features[N_FEATURE], int *seed) {
+                 uint32_t boosting_i, float max_features[N_FEATURE], float min_features[N_FEATURE],
+                  int *seed, int n_classes) {
 
     uint32_t mutation_threshold = mutation_rate * RAND_MAX;
     uint8_t n_feature;
@@ -111,7 +113,7 @@ void mutate_trees(tree_data input_tree[N_TREES][N_NODE_AND_LEAFS],
 
                 if (output_tree[tree_i][node_i].tree_camps.leaf_or_node == 0){
                     output_tree[tree_i][node_i].tree_camps.float_int_union.i =
-                        generate_leaf_value(seed);
+                        generate_leaf_value(seed, n_classes);
                 }else{
                     output_tree[tree_i][node_i].tree_camps.float_int_union.f =
                         generate_threshold(min_features[n_feature], max_features[n_feature], seed);
@@ -183,7 +185,7 @@ void crossover(tree_data trees_population[POPULATION][N_TREES][N_NODE_AND_LEAFS]
 void mutate_population(tree_data trees_population[POPULATION][N_TREES][N_NODE_AND_LEAFS],
                         float population_accuracy[POPULATION], float max_features[N_FEATURE],
                         float min_features[N_FEATURE], uint8_t n_features, float mutation_factor, 
-                        uint32_t boosting_i){
+                        uint32_t boosting_i, int n_classes){
 
     printf("Número de hilos: %d\n", omp_get_max_threads());
 
@@ -202,7 +204,7 @@ void mutate_population(tree_data trees_population[POPULATION][N_TREES][N_NODE_AN
         }else{
             mutate_trees(local_tree, trees_population[p], n_features,
                         0.5 + mutation_factor,
-                        boosting_i, max_features, min_features, &seed);
+                        boosting_i, max_features, min_features, &seed, n_classes);
         }
         
     }
@@ -332,6 +334,22 @@ void find_max_min_features(struct feature features[MAX_TEST_SAMPLES],
             }
         }
     }
+}
+
+
+void find_n_classes(struct feature features[MAX_TEST_SAMPLES], int *n_classes, 
+                                                            int read_samples){
+
+    for (int j = 0; j < N_FEATURE; j++) {
+        *n_classes = features[0].prediction;
+    }
+
+    for (int i = 1; i < read_samples; i++) {
+        if (*n_classes < features[i].prediction) {
+            *n_classes = features[i].prediction;
+        }
+    }
+    *n_classes++;
 }
 
 void swap_features(struct feature* a, struct feature* b) {
