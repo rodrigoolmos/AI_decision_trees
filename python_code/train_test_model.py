@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
 
 # Leer el dataset en formato CSV
-file_path = "/home/rodrigo/tfm/datasets/kaggle/multi_class/test_motion_mod.csv"  # Cambia esto por la ruta a tu dataset
+file_path = "/home/rodrigo/Documents/AI_decision_trees/datasets/SoA/paper5/winequality-white.csv"  # Cambia esto por la ruta a tu dataset
 df = pd.read_csv(file_path)
 
 # Barajar los datos antes de dividirlos
