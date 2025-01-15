@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
 
 # Leer el dataset en formato CSV
-file_path = "/home/rodrigo/Documents/AI_decision_trees/datasets/SoA/paper0/ecoli.csv"  # Cambia esto por la ruta a tu dataset
+file_path = "/home/rodrigo/Documents/AI_decision_trees/datasets/kaggle/multi_class/Student_performance_data.csv"  # Cambia esto por la ruta a tu dataset
 df = pd.read_csv(file_path)
 
 # Barajar los datos antes de dividirlos
@@ -39,7 +39,7 @@ params = {
     'boosting_type': 'gbdt',
     'learning_rate': 0.1,
     'num_leaves': 255,
-    'num_trees': 64,
+    'num_trees': 128,
     'feature_fraction': 0.8,
     'bagging_fraction': 0.8,
     'bagging_freq': 5,
