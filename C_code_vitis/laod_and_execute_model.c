@@ -180,7 +180,7 @@ int main() {
     tree_data trees_population[POPULATION][N_TREES][N_NODE_AND_LEAFS] = {0};
     tree_data golden_tree[N_TREES][N_NODE_AND_LEAFS] = {0};
 
-    char *path ="/home/rodrigo/Documents/AI_decision_trees/datasets/SoA/paper0/ecoli.csv";
+    char *path ="/home/rodrigo/Documents/AI_decision_trees/datasets/SoA/paper9/lenses_M.csv";
 
     printf("Training model %s\n", path);
     int n_features;
