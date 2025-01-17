@@ -31,7 +31,7 @@ float generate_threshold(float min, float max,int* seed) {
 
 float generate_leaf_value(int *seed, int n_classes){
     //float random_f = ((float) 2 * rand_r(seed) / (float)RAND_MAX) - 1.0;
-    int random_f = (rand_r(seed) % n_classes);
+    int random_f = (rand_r(seed) % (n_classes + 1));
 
     return random_f;
 }
