@@ -3,9 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "predict.h"
 #include "diabetes_model.h"
 #include "diabetes_dataset.h"
+#include "predict_esp.h"
+
+#define ESP 1
+#define NORMAL 0
 
 #define MAX_LINE_LENGTH 1024
 #define MAX_COLUMNS 10
@@ -84,15 +87,21 @@ int read_n_features(const char *csv_file, int n, struct feature *features) {
 
 void evaluate_model(tree_data tree[N_TREES][N_NODE_AND_LEAFS], 
                     struct feature *features, int read_samples, 
-                    float* time_used){
+                    float* time_used, int version){
 
     int accuracy = 0;
     int32_t prediction;
     clock_t start_time, end_time;
     start_time = clock();
 
+    predict_esp(tree, 1, &prediction);
+
     for (size_t i = 0; i < read_samples; i++){
-        predict(tree, features[i].features, &prediction);
+        if(version == NORMAL){
+            predict(tree, features[i].features, &prediction);
+        }else{
+            predict_esp(features[i].features, 0, &prediction);
+        }
         if (features[i].prediction == (prediction > 0))
             accuracy++;
     }
@@ -112,7 +121,7 @@ int main() {
 
     read_samples = read_n_features("../datasets/diabetes.csv", MAX_TEST_SAMPLES, features_read);
     load_model(tree_data, "../trained_models/diabetes.model");
-    evaluate_model(tree_data, features_read, read_samples, &time_used);
+    evaluate_model(tree_data, features_read, read_samples, &time_used, NORMAL);
 
     for (int i = 0; i < 128; i++){
         for (int j = 0; j < 128; j++){
@@ -123,7 +132,7 @@ int main() {
     }
     
 
-    evaluate_model(tree, features, N_ITEMS, &time_used);    
+    evaluate_model(tree, features, N_ITEMS, &time_used, ESP);
 
     return 0;
 }

@@ -10,6 +10,8 @@ set(DIR_HW ${CMAKE_SOURCE_DIR}/linux_drivers)
 set(LIB_SOURCES_SW
     ${DIR_SW}/predict.c
     ${DIR_SW}/predict.h
+    ${DIR_SW}/predict_esp.c
+    ${DIR_SW}/predict_esp.h
     ${DIR_SW}/diabetes_dataset.h
     ${DIR_SW}/diabetes_model.h
 )
