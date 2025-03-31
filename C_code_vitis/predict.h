@@ -1,8 +1,8 @@
 #include <stdint.h>
 
-#define N_NODE_AND_LEAFS 256  // Adjust according to the maximum number of nodes and leaves in your trees
-#define N_TREES 512           // Adjust according to the number of trees in your model
-#define N_FEATURE 32    // Adjust according to the number of features in your model
+#define N_NODE_AND_LEAFS 256    // Adjust according to the maximum number of nodes and leaves in your trees
+#define N_TREES 128             // Adjust according to the number of trees in your model
+#define N_FEATURE 32            // Adjust according to the number of features in your model
 
 typedef union {
     float f;

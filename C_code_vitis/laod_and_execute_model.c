@@ -4,6 +4,8 @@
 #include <string.h>
 #include <time.h>
 #include "predict.h"
+#include "diabetes_model.h"
+#include "diabetes_dataset.h"
 
 #define MAX_LINE_LENGTH 1024
 #define MAX_COLUMNS 10
@@ -11,12 +13,6 @@
 #define MAX_TEST_SAMPLES 3000
 
 #define N_ITE 400
-
-
-struct feature {
-    float features[N_FEATURE];
-    uint8_t prediction;
-};
 
 struct dataset {
     struct feature *data;
@@ -108,46 +104,26 @@ void evaluate_model(tree_data tree[N_TREES][N_NODE_AND_LEAFS],
 }
 
 int main() {
-    float prediction;
     float time_used = 0;
-    float time_model_1 = 0;
-    float time_model_2 = 0;
-    float time_model_3 = 0;
-    float time_model_4 = 0;
-    float time_model_5 = 0;
 
-
-    struct feature features[MAX_TEST_SAMPLES];
-    int read_samples, i;
+    struct feature features_read[MAX_TEST_SAMPLES];
+    int read_samples;
     tree_data tree_data[N_TREES][N_NODE_AND_LEAFS];
-    for (i = 0; i < N_ITE; i++){
-        printf("Executing SW\n");
-        read_samples = read_n_features("../datasets/diabetes.csv", MAX_TEST_SAMPLES, features);
-        load_model(tree_data, "../trained_models/diabetes_512.model");
-        evaluate_model(tree_data, features, read_samples, &time_used);
-        time_model_1 += time_used;
-        read_samples = read_n_features("../datasets/Heart_Attack.csv", MAX_TEST_SAMPLES, features);
-        load_model(tree_data, "../trained_models/heart_attack_512.model");
-        evaluate_model(tree_data, features, read_samples, &time_used);
-        time_model_2 += time_used;
-        read_samples = read_n_features("../datasets/Lung_Cancer_processed_dataset.csv", MAX_TEST_SAMPLES, features);
-        load_model(tree_data, "../trained_models/lung_cancer_512.model"); 
-        evaluate_model(tree_data, features, read_samples, &time_used);
-        time_model_3 += time_used;
-        read_samples = read_n_features("../datasets/anemia_processed_dataset.csv", MAX_TEST_SAMPLES, features);
-        load_model(tree_data, "../trained_models/anemia_512.model");
-        evaluate_model(tree_data, features, read_samples, &time_used);
-        time_model_4 += time_used;
-        read_samples = read_n_features("../datasets/alzheimers_processed_dataset.csv", MAX_TEST_SAMPLES, features);
-        load_model(tree_data, "../trained_models/alzheimers_512.model");
-        evaluate_model(tree_data, features, read_samples, &time_used);
-        time_model_5 += time_used;
+
+    read_samples = read_n_features("../datasets/diabetes.csv", MAX_TEST_SAMPLES, features_read);
+    load_model(tree_data, "../trained_models/diabetes.model");
+    evaluate_model(tree_data, features_read, read_samples, &time_used);
+
+    for (int i = 0; i < 128; i++){
+        for (int j = 0; j < 128; j++){
+            if(tree_data[i][j].compact_data != tree[i][j]){
+                printf("Error en el arbol %d, nodo %d\n", i, j);
+            }
+        }
     }
     
-    printf("AVERAGE TIME CPU MODEL 1 %f\n", time_model_1 / N_ITE);
-    printf("AVERAGE TIME CPU MODEL 2 %f\n", time_model_2 / N_ITE);
-    printf("AVERAGE TIME CPU MODEL 3 %f\n", time_model_3 / N_ITE);
-    printf("AVERAGE TIME CPU MODEL 4 %f\n", time_model_4 / N_ITE);
-    printf("AVERAGE TIME CPU MODEL 5 %f\n", time_model_5 / N_ITE);
+
+    evaluate_model(tree, features, N_ITEMS, &time_used);    
+
     return 0;
 }
