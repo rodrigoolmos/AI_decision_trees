@@ -180,7 +180,7 @@ int main() {
     tree_data trees_population[POPULATION][N_TREES][N_NODE_AND_LEAFS] = {0};
     tree_data golden_tree[N_TREES][N_NODE_AND_LEAFS] = {0};
 
-    char *path ="/home/rodrigo/Documents/AI_decision_trees/datasets/SoA/paper9/lenses_M.csv";
+    char *path ="/home/rodrigo/Documents/AI_decision_trees/datasets/indra/caracterizacion_pri.csv";
 
     printf("Training model %s\n", path);
     int n_features;
@@ -193,6 +193,8 @@ int main() {
     read_samples = augment_features(features, read_samples, n_features, 
                                     max_features, min_features, features_augmented,
                                     MAX_TEST_SAMPLES*10, 0);
+
+    //read_samples /= 40; // reduce the amount of samples to 10% of the original
 
     for (size_t boosting_i = 0; boosting_i < N_TREES / N_BOOSTING; boosting_i++){
         used_trees = (boosting_i + 1)*N_BOOSTING;
