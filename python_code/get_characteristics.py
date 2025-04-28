@@ -1,6 +1,8 @@
 import pandas as pd
 from pandas.plotting import scatter_matrix
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')  # Usamos un backend no interactivo, ideal para guardar imágenes
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -49,12 +51,15 @@ def calculate_correlation(file_path):
 
         # Visualización de pares
         sns.pairplot(data=data, hue=data.columns[-1])
-        plt.show()
+
+        # Guardar el gráfico en un archivo
+        plt.savefig('pairplot_output.png')
+        print("Gráfico guardado como pairplot_output.png")
 
     except Exception as e:
         print(f"Error: {e}")
 
 # Ejemplo de uso
-file_path = "/home/rodrigo/Documents/AI_decision_trees/datasets/SoA/paper9/lenses_M.csv"  # Cambiar por la ruta de tu archivo CSV
+file_path = "/home/rodrigo/Documents/AI_decision_trees/datasets/indra/caracterizacion_pri.csv"  # Cambiar por la ruta de tu archivo CSV
 print(file_path)
 correlations = calculate_correlation(file_path)
