@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
 
 # Leer el dataset en formato CSV
-file_path = "/home/rodrigo/Documents/AI_decision_trees/datasets/SoA/paper9/lenses_M.csv"  # Cambia esto por la ruta a tu dataset
+file_path = "/home/rodrigo/Documents/AI_decision_trees/datasets/kaggle/multi_class/updated_pollution_dataset.csv"  # Cambia esto por la ruta a tu dataset
 df = pd.read_csv(file_path)
 
 # Barajar los datos antes de dividirlos
@@ -39,7 +39,7 @@ params = {
     'boosting_type': 'gbdt',
     'learning_rate': 0.1,
     'num_leaves': 255,
-    'num_trees': 128,
+    'num_trees': 40,
     'feature_fraction': 0.8,
     'bagging_fraction': 0.8,
     'bagging_freq': 5,
@@ -69,6 +69,10 @@ else:
     # Para binario, usamos un umbral de 0.5
     y_pred = model.predict(X_test, num_iteration=model.best_iteration)
     y_pred_labels = [1 if pred > 0.5 else 0 for pred in y_pred]
+
+# Mostrar numero de árboles en el modelo
+total_trees = model.num_trees()
+print(f"\nNúmero total de árboles en el ensemble: {total_trees}")
 
 # Evaluar el modelo
 accuracy = accuracy_score(y_test, y_pred_labels)

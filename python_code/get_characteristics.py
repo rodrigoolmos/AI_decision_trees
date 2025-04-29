@@ -60,6 +60,6 @@ def calculate_correlation(file_path):
         print(f"Error: {e}")
 
 # Ejemplo de uso
-file_path = "/home/rodrigo/Documents/AI_decision_trees/datasets/indra/caracterizacion_pri.csv"  # Cambiar por la ruta de tu archivo CSV
+file_path = "/home/rodrigo/Documents/AI_decision_trees/datasets/indra/caracterizacion_frec.csv"  # Cambiar por la ruta de tu archivo CSV
 print(file_path)
 correlations = calculate_correlation(file_path)

@@ -29,12 +29,59 @@ float generate_threshold(float min, float max,int* seed) {
     return random_threshold;
 }
 
-float generate_leaf_value(int *seed, int n_classes){
-    //float random_f = ((float) 2 * rand_r(seed) / (float)RAND_MAX) - 1.0;
-    int random_f = (rand_r(seed) % (n_classes + 1));
+float generate_leaf_value(int *seed,
+                          int   n_classes,           // N en tu caso (clases 0…N)
+                          const float *class_accuracy)
+{
+    const float beta = 0.5f;          // mezcla explotación/exploración
+    int K = n_classes + 1;            // clases de 0 a N
+    float weights[256];
+    float total_w = 0.0f;
 
-    return random_f;
+    // Probabilidad de no votar = 25%
+    if ((rand_r(seed) & 0x3) == 0) {
+        return NULL_VOTE;
+    }
+
+    // 1) Calcula los pesos mixtos w[k]
+    for (int k = 0; k < K; k++) {
+        float err = 1.0f - class_accuracy[k];      // en [0..1]
+        // w_k = 2·β·err + (1 - β/2)/K
+        float w = 2.0f*beta*err + (1.0f - beta*0.5f)/(float)K;
+        weights[k] = w;
+        total_w   += w;
+    }
+
+    // 2) Si todas las clases están resueltas, devolvemos NULL_VOTE
+    if (total_w <= 0.0f) {
+        return NULL_VOTE;
+    }
+
+    // 3) Muestreo ponderado sobre [0..total_w)
+    float r = ((float)rand_r(seed) / (float)RAND_MAX) * total_w;
+    float cumsum = 0.0f;
+    int chosen = K - 1;  // por defecto la última clase
+    for (int k = 0; k < K; k++) {
+        cumsum += weights[k];
+        if (r < cumsum) {
+            chosen = k;
+            break;
+        }
+    }
+
+    // 4) Si la clase elegida está al 100% de accuracy,
+    //    tenemos un 50% de probabilidad de abstenernos
+    if (class_accuracy[chosen] >= 0.99f) {
+        // rand_r devuelve 0..RAND_MAX, comparamos con RAND_MAX/2
+        if ((rand_r(seed) & 0x1) == 0) {
+            return NULL_VOTE;
+        }
+    }
+
+    // 5) De lo contrario devolvemos la clase elegida
+    return (float)chosen;
 }
+
 
 uint8_t generate_leaf_node(uint8_t prob__leaf_node, int *seed) {
     uint8_t random_8 = (uint8_t)rand_r(seed) % 100;
@@ -55,6 +102,7 @@ void generate_rando_trees(tree_data trees[N_TREES][N_NODE_AND_LEAFS],
     srand(clock());
     uint8_t n_feature;
     int seed = trees;
+    float class_100x100[256] = {0};
 
     #pragma omp parallel for schedule(static)
     for (uint32_t tree_i = boosting_i * N_BOOSTING; 
@@ -73,7 +121,7 @@ void generate_rando_trees(tree_data trees[N_TREES][N_NODE_AND_LEAFS],
 
             if (trees[tree_i][node_i].tree_camps.leaf_or_node == 0){
                 trees[tree_i][node_i].tree_camps.float_int_union.i =
-                    generate_leaf_value(&seed, n_classes);
+                    generate_leaf_value(&seed, n_classes, class_100x100);
             }else{
                 trees[tree_i][node_i].tree_camps.float_int_union.f =
                     generate_threshold(min_features[n_feature], max_features[n_feature], &seed);
@@ -88,7 +136,7 @@ void mutate_trees(tree_data input_tree[N_TREES][N_NODE_AND_LEAFS],
                  tree_data output_tree[N_TREES][N_NODE_AND_LEAFS],
                  uint8_t n_features, float mutation_rate, 
                  uint32_t boosting_i, float max_features[N_FEATURE], float min_features[N_FEATURE],
-                  int *seed, int n_classes) {
+                  int *seed, int n_classes, float class_100x100[]) {
 
     uint32_t mutation_threshold = mutation_rate * RAND_MAX;
     uint8_t n_feature;
@@ -113,7 +161,7 @@ void mutate_trees(tree_data input_tree[N_TREES][N_NODE_AND_LEAFS],
 
                 if (output_tree[tree_i][node_i].tree_camps.leaf_or_node == 0){
                     output_tree[tree_i][node_i].tree_camps.float_int_union.i =
-                        generate_leaf_value(seed, n_classes);
+                        generate_leaf_value(seed, n_classes, class_100x100);
                 }else{
                     output_tree[tree_i][node_i].tree_camps.float_int_union.f =
                         generate_threshold(min_features[n_feature], max_features[n_feature], seed);
@@ -185,7 +233,7 @@ void crossover(tree_data trees_population[POPULATION][N_TREES][N_NODE_AND_LEAFS]
 void mutate_population(tree_data trees_population[POPULATION][N_TREES][N_NODE_AND_LEAFS],
                         float population_accuracy[POPULATION], float max_features[N_FEATURE],
                         float min_features[N_FEATURE], uint8_t n_features, float mutation_factor, 
-                        uint32_t boosting_i, int n_classes){
+                        uint32_t boosting_i, int n_classes, float class_100x100[]){
 
     printf("Número de hilos: %d\n", omp_get_max_threads());
 
@@ -204,7 +252,7 @@ void mutate_population(tree_data trees_population[POPULATION][N_TREES][N_NODE_AN
         }else{
             mutate_trees(local_tree, trees_population[p], n_features,
                         0.5 + mutation_factor,
-                        boosting_i, max_features, min_features, &seed, n_classes);
+                        boosting_i, max_features, min_features, &seed, n_classes, class_100x100);
         }
         
     }

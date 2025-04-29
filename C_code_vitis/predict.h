@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#define NULL_VOTE 256
+
 #define N_BOOSTING 2
 
 #define N_NODE_AND_LEAFS 256            // Adjust according to the maximum number of nodes and leaves in your trees
