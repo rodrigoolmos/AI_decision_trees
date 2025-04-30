@@ -41,7 +41,7 @@ add_library(predict_lib STATIC ${LIB_SOURCES_SW})
 
 add_library(common_lib STATIC ${LIB_SOURCES_HW})
 
-set(SOURCES_SW ${DIR_SW}/laod_and_execute_model.c)
+set(SOURCES_SW ${DIR_SW}/train_export_model.c)
 
 add_executable(execute_model_sw ${SOURCES_SW})
 

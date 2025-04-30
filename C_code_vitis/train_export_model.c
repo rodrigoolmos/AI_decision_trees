@@ -168,6 +168,27 @@ void show_logs(float population_accuracy[POPULATION]){
         }
 }
 
+void export_model(tree_data trees[N_TREES][N_NODE_AND_LEAFS], const char* filename) {
+    FILE* f = fopen(filename, "wb");
+    if (!f) {
+        perror("Failed to open model file");
+        return;
+    }
+
+    // Write header
+    fwrite("model", 1, 5, f);
+
+    for (int t = 0; t < N_TREES; ++t) {
+        for (int i = 0; i < N_NODE_AND_LEAFS; ++i) {
+            int64_t compact_data = trees[t][i].compact_data;
+
+            fwrite(&compact_data, sizeof(int64_t), 1, f);
+        }
+    }
+
+    fclose(f);
+}
+
 int main() {
 
     struct timeval init_predictions = {0};
@@ -297,6 +318,9 @@ int main() {
     printf("Final evaluation !!!!\n\n");
     evaluate_model(golden_tree, &features_augmented[read_samples * 80/100],
                     read_samples * 20/100, &used_trees, n_classes, class_100x100);
+
+    printf("Exporting model\n");
+    export_model(golden_tree, "model.bin");
     return 0;
 
 }
