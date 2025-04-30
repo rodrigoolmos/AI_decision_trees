@@ -41,9 +41,11 @@ add_library(predict_lib STATIC ${LIB_SOURCES_SW})
 
 add_library(common_lib STATIC ${LIB_SOURCES_HW})
 
-set(SOURCES_SW ${DIR_SW}/train_export_model.c)
+set(SOURCES_TRAIN ${DIR_SW}/train_export_model.c)
+add_executable(train_export_model ${SOURCES_TRAIN})
 
-add_executable(execute_model_sw ${SOURCES_SW})
+set(SOURCES_EXECUTE ${DIR_SW}/load_execute_model.c)
+add_executable(load_execute_model ${SOURCES_EXECUTE})
 
 if(UNIX AND NOT APPLE)
 
@@ -54,7 +56,8 @@ if(UNIX AND NOT APPLE)
 
 endif()
 
-target_link_libraries(execute_model_sw PRIVATE predict_lib m OpenMP::OpenMP_C)
+target_link_libraries(load_execute_model PRIVATE predict_lib m OpenMP::OpenMP_C)
+target_link_libraries(train_export_model PRIVATE predict_lib m OpenMP::OpenMP_C)
 
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/trained_models)
