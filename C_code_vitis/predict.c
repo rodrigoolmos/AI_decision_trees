@@ -1,7 +1,5 @@
 #include "predict.h"
 
-#define N_CLASSES 32  /* sustituir por el número de clases real */
-
 void predict(uint64_t bram_tree[N_TREES][N_NODE_AND_LEAFS],
              float   bram_features_ping[MAX_BURST_FEATURES][N_FEATURE],
              float   bram_features_pong[MAX_BURST_FEATURES][N_FEATURE],
@@ -17,7 +15,7 @@ void predict(uint64_t bram_tree[N_TREES][N_NODE_AND_LEAFS],
 
     float  local_features_ping[N_FEATURE];
     float  local_features_pong[N_FEATURE];
-    int32_t vals[N_TREES];
+    int32_t counts[N_CLASSES];
 
     #pragma HLS TOP name=predict
     #pragma HLS INTERFACE mode=bram    port=prediction_ping
@@ -63,6 +61,11 @@ void predict(uint64_t bram_tree[N_TREES][N_NODE_AND_LEAFS],
     burst_loop: for (int j = 0; j < *features_burst_length; j++) {
     #pragma HLS loop_tripcount min=1 max=MAX_BURST_FEATURES
 
+        // Inicializa el contador de votos
+        for (int c = 0; c < N_CLASSES; c++) {
+            counts[c] = 0;
+        }
+
         // 1) Recoge en vals[t] el valor de hoja de cada árbol
         if (local_ping_pong) {
             predict_ping: for (int t = 0; t < *trees_used; t++) {
@@ -81,7 +84,11 @@ void predict(uint64_t bram_tree[N_TREES][N_NODE_AND_LEAFS],
                             < (*(int32_t*)&th)) ? nl : nr;
                     if (!(td.tree_camps.leaf_or_node & 0x1)) break;
                 }
-                vals[t] = td.tree_camps.float_int_union.i;
+                int32_t cls = td.tree_camps.float_int_union.i;
+                if (cls >= 0 && cls < N_CLASSES) {
+                    counts[cls]++;
+                }                
+                
             }
             // Pre-carga siguiente burst en pong
             copy_pong: for (int i = 0; i < N_FEATURE && j+1 < *features_burst_length; i++) {
@@ -107,7 +114,11 @@ void predict(uint64_t bram_tree[N_TREES][N_NODE_AND_LEAFS],
                             < (*(int32_t*)&th)) ? nl : nr;
                     if (!(td.tree_camps.leaf_or_node & 0x1)) break;
                 }
-                vals[t] = td.tree_camps.float_int_union.i;
+                int32_t cls = td.tree_camps.float_int_union.i;
+                if (cls >= 0 && cls < N_CLASSES) {
+                    counts[cls]++;
+                }
+                
             }
             // Pre-carga siguiente burst en ping
             copy_ping: for (int i = 0; i < N_FEATURE && j+1 < *features_burst_length; i++) {
@@ -118,21 +129,6 @@ void predict(uint64_t bram_tree[N_TREES][N_NODE_AND_LEAFS],
             }
         }
 
-        // 2) Cálculo del MODO (voto mayoritario)
-        int32_t counts[N_CLASSES];
-        #pragma HLS ARRAY_PARTITION variable=counts complete
-        // Inicializa contadores
-        init_counts: for (int c = 0; c < N_CLASSES; c++) {
-        #pragma HLS UNROLL
-            counts[c] = 0;
-        }
-        // Cuenta cada voto
-        count_votes: for (int t = 0; t < *trees_used; t++) {
-        #pragma HLS UNROLL factor=N_TREES_IP
-            int32_t cls = vals[t];
-            if(cls != NULL_VOTE)
-                counts[cls]++;
-        }
         // Busca la clase ganadora
         int32_t best      = 0;
         int32_t best_count = counts[0];

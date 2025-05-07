@@ -216,7 +216,7 @@ int main() {
     tree_data trees_population[POPULATION][N_TREES][N_NODE_AND_LEAFS] = {0};
     tree_data golden_tree[N_TREES][N_NODE_AND_LEAFS] = {0};
 
-    char *path ="/home/rodrigo/Documents/AI_decision_trees/datasets/kaggle/multi_class/updated_pollution_dataset.csv";
+    char *path ="/home/rodrigo/Documents/AI_decision_trees/datasets/indra/caracterizacion_frec.csv";
 
     printf("Training model %s\n", path);
     int n_features;
@@ -230,7 +230,7 @@ int main() {
                                     max_features, min_features, features_augmented,
                                     MAX_TEST_SAMPLES*10, 0);
 
-    //read_samples /= 40; // reduce the amount of samples to 10% of the original
+    read_samples /= 50; // reduce the amount of samples 
 
     for (size_t boosting_i = 0; boosting_i < N_TREES / N_BOOSTING; boosting_i++){
         used_trees = (boosting_i + 1)*N_BOOSTING;

@@ -1,7 +1,5 @@
 #include <stdint.h>
 
-#define NULL_VOTE 256
-
 #define N_BOOSTING 2
 
 #define N_NODE_AND_LEAFS 256            // Adjust according to the maximum number of nodes and leaves in your trees
@@ -9,6 +7,8 @@
 #define N_FEATURE 32                    // Adjust according to the number of features in your model
 #define MAX_BURST_FEATURES 256          // Adjust according to the number burst features
 #define MAX_TEST_SAMPLES 30000
+#define N_CLASSES 32                    // Adjust according to the number of classes in your model
+#define NULL_VOTE -1
 
 struct feature {
     float features[N_FEATURE];
