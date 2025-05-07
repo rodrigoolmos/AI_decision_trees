@@ -102,10 +102,15 @@ void coppy_trees(tree_data tree[N_TREES][N_NODE_AND_LEAFS], token_t *buf)
     }
 }
 
-void evaluate_model(token_t *buf, struct feature *features, int read_samples)
+void evaluate_model(token_t *buf, struct feature *features, int read_samples,
+                    int n_classes)
 {
-    int accuracy = 0;
+
     int32_t prediction;
+    int accuracy[256] = {0};
+    int accuracy_total = 0;
+    int evaluated[256] = {0};
+    int evaluated_total = 0;
 
     printf("Loading trees...\n");
     trees_cfg_000[0].load_trees = N_TREES * N_NODE_AND_LEAFS;
@@ -125,11 +130,24 @@ void evaluate_model(token_t *buf, struct feature *features, int read_samples)
 
         prediction = buf[N_FEATURE];
 
-        if (features[i].prediction == (prediction > 0)) accuracy++;
-        //printf("Sample %d: Prediction %d, Actual %d\n", i, prediction, features[i].prediction);
+        if (features[i].prediction == prediction){
+            accuracy[features[i].prediction]++;
+            accuracy_total++;
+        }
+
+        evaluated[features[i].prediction]++;
+        evaluated_total++;
     }
 
-    printf("Accuracy %f\n", 1.0 * accuracy / read_samples);
+    for (int i = 0; i <= n_classes; i++){
+        printf("Accuracy %f class %i num instances %i\n", 
+            1.0 * accuracy[i] / evaluated[i], i, evaluated[i]);
+    }
+
+    printf("Accuracy total %f evaluates samples %i of %i\n", 
+                1.0 * accuracy_total / read_samples, evaluated_total, read_samples);
+
+
 }
 
 void make_prediction(uint64_t tree[N_TREES][N_NODE_AND_LEAFS],
@@ -137,6 +155,7 @@ void make_prediction(uint64_t tree[N_TREES][N_NODE_AND_LEAFS],
 {
     int32_t sum = 0;
     int32_t leaf_value;
+    int32_t counts[N_CLASSES] = {0};
 
     for (int t = 0; t < N_TREES; t++) {
         uint8_t node_index = 0;
@@ -161,22 +180,68 @@ void make_prediction(uint64_t tree[N_TREES][N_NODE_AND_LEAFS],
         }
 
         leaf_value = tree_data.tree_camps.float_int_union.i;
-        sum += leaf_value;
+        if (leaf_value >= 0 && leaf_value < N_CLASSES) {
+            counts[leaf_value]++;
+        } 
     }
-    *prediction = sum;
+
+    // Busca la clase ganadora
+    int32_t best      = 0;
+    int32_t best_count = counts[0];
+    find_best: for (int c = 1; c < N_CLASSES; c++) {
+        if (counts[c] > best_count) {
+            best_count = counts[c];
+            best       = c;
+        }
+    }
+
+    *prediction = best;
+    
 }
 
 void software_prediction(struct feature *features, int read_samples,
-                            uint64_t tree[N_TREES][N_NODE_AND_LEAFS])
+                            uint64_t tree[N_TREES][N_NODE_AND_LEAFS],
+                            int n_classes)
 {
     int32_t prediction;
-    int accuracy = 0;
+    int accuracy[256] = {0};
+    int accuracy_total = 0;
+    int evaluated[256] = {0};
+    int evaluated_total = 0;
 
     for (size_t i = 0; i < read_samples; i++) {
         make_prediction(tree, features[i].features, &prediction);
-        if (features[i].prediction == (prediction > 0)) accuracy++;
+        if (features[i].prediction == prediction){
+            accuracy[features[i].prediction]++;
+            accuracy_total++;
+        }
+
+        evaluated[features[i].prediction]++;
+        evaluated_total++;
+
     }
-    printf("Accuracy %f\n", 1.0 * accuracy / read_samples);
+
+    for (int i = 0; i <= n_classes; i++){
+        printf("Accuracy %f class %i num instances %i\n", 
+            1.0 * accuracy[i] / evaluated[i], i, evaluated[i]);
+    }
+
+    printf("Accuracy total %f evaluates samples %i of %i\n", 
+                1.0 * accuracy_total / read_samples, evaluated_total, read_samples);
+
+}
+
+void find_n_classes(struct feature features[MAX_TEST_SAMPLES], int *n_classes, int read_samples)
+{
+
+    for (int j = 0; j < N_FEATURE; j++) {
+        *n_classes = features[0].prediction;
+    }
+
+    for (int i = 1; i < read_samples; i++) {
+        if (*n_classes < features[i].prediction) { *n_classes = features[i].prediction; }
+    }
+    *n_classes++;
 }
 
 int main(int argc, char **argv)
@@ -184,6 +249,7 @@ int main(int argc, char **argv)
     struct timespec startn, endn;
     token_t *buf;
     struct feature features_read[MAX_TEST_SAMPLES];
+    int n_classes;
     int read_samples;
     tree_data tree_data[N_TREES][N_NODE_AND_LEAFS];
     unsigned long long sw_ns;
@@ -203,6 +269,9 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    find_n_classes(features_read, &n_classes, read_samples);
+    printf("Num clases of the dataset %i", n_classes);
+
     // Cargar modelo desde el archivo recibido por línea de comandos
     printf("Cargando modelo desde %s...\n", argv[2]);
     load_model(tree_data, argv[2]);
@@ -216,14 +285,14 @@ int main(int argc, char **argv)
 
     printf("evaluate_model hardware\n");
     gettime(&startn);
-    evaluate_model(buf, features_read, read_samples);
+    evaluate_model(buf, features_read, read_samples, n_classes);
     gettime(&endn);
     sw_ns = ts_subtract(&startn, &endn);
     printf("  > Hardware test time: %llu ns\n", sw_ns);
 
     printf("evaluate_model software\n");
     gettime(&startn);
-    software_prediction(features_read, read_samples, tree_data);
+    software_prediction(features_read, read_samples, tree_data, n_classes);
     gettime(&endn);
     sw_ns = ts_subtract(&startn, &endn);
     printf("  > Software test time: %llu ns\n", sw_ns);

@@ -10,6 +10,8 @@
 #define N_TREES 128             // Adjust according to the number of trees in your model
 #define N_FEATURE 32            // Adjust according to the number of features in your model
 #define N_ITEMS 768             // Adjust according to the number of items in your model
+#define N_CLASSES 32            // Adjust according to the number of classes in your model
+
 
 typedef union {
     float f;

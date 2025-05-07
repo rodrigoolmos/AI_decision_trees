@@ -46,8 +46,9 @@ esp_thread_info_t cfg_000[] = {{
 #define N_TREES 128             // Adjust according to the number of trees in your model
 #define N_FEATURE 32            // Adjust according to the number of features in your model
 #define N_ITEMS 768             // Adjust according to the number of items in your model
-#define MAX_TEST_SAMPLES 3000   // Adjust according to the maximum number of test samples
+#define MAX_TEST_SAMPLES 30000  // Adjust according to the maximum number of test samples
 #define MAX_LINE_LENGTH 1024    // Adjust according to the maximum line length in your CSV file
+#define N_CLASSES 32            // Adjust according to the number of classes in your model
 
 typedef union {
     float f;

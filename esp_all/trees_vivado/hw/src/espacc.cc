@@ -77,6 +77,12 @@ void predict(uint64_t tree[N_TREES][N_NODE_AND_LEAFS], float features[N_FEATURE]
 
     int32_t sum = 0;
     int32_t leaf_value;
+    int32_t counts[N_CLASSES];
+    
+    // Inicializa el contador de votos
+    for (int c = 0; c < N_CLASSES; c++) {
+        counts[c] = 0;
+    }
 
 trees_loop:
     for (int t = 0; t < N_TREES; t++) {
@@ -103,9 +109,22 @@ trees_loop:
         }
 
         leaf_value = tree_data.tree_camps.float_int_union.i;
-        sum += leaf_value;
+        if (leaf_value >= 0 && leaf_value < N_CLASSES) {
+            counts[leaf_value]++;
+        } 
     }
-    *prediction = sum;
+
+    // Busca la clase ganadora
+    int32_t best      = 0;
+    int32_t best_count = counts[0];
+    find_best: for (int c = 1; c < N_CLASSES; c++) {
+        if (counts[c] > best_count) {
+            best_count = counts[c];
+            best       = c;
+        }
+    }
+
+    *prediction = best;
 }
 
 void coppy_features(float features[N_FEATURE], word_t _inbuff[N_FEATURE / 2])
@@ -125,7 +144,7 @@ void compute(word_t _inbuff[SIZE_IN_CHUNK_DATA],
     float features[N_FEATURE];
     int32_t prediction;
 
-#pragma HLS ARRAY_PARTITION variable = tree block factor = (N_TREES / 2) dim = 1
+#pragma HLS ARRAY_PARTITION variable = trees complete dim = 1
 #pragma HLS ARRAY_PARTITION variable = features complete dim = 1
 
     if (load_trees == N_TREES * N_NODE_AND_LEAFS) {
