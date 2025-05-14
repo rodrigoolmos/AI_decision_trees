@@ -384,20 +384,14 @@ void find_max_min_features(struct feature features[MAX_TEST_SAMPLES],
     }
 }
 
+void find_n_classes(struct feature features[MAX_TEST_SAMPLES], int *n_classes, int read_samples)
+{
 
-void find_n_classes(struct feature features[MAX_TEST_SAMPLES], int *n_classes, 
-                                                            int read_samples){
-
-    for (int j = 0; j < N_FEATURE; j++) {
-        *n_classes = features[0].prediction;
-    }
+    *n_classes = features[0].prediction;
 
     for (int i = 1; i < read_samples; i++) {
-        if (*n_classes < features[i].prediction) {
-            *n_classes = features[i].prediction;
-        }
+        if (*n_classes < features[i].prediction) { *n_classes = features[i].prediction; }
     }
-    *n_classes++;
 }
 
 void swap_features(struct feature* a, struct feature* b) {
