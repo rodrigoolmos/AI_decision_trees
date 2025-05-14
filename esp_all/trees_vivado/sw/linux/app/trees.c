@@ -234,14 +234,11 @@ void software_prediction(struct feature *features, int read_samples,
 void find_n_classes(struct feature features[MAX_TEST_SAMPLES], int *n_classes, int read_samples)
 {
 
-    for (int j = 0; j < N_FEATURE; j++) {
-        *n_classes = features[0].prediction;
-    }
+    *n_classes = features[0].prediction;
 
     for (int i = 1; i < read_samples; i++) {
         if (*n_classes < features[i].prediction) { *n_classes = features[i].prediction; }
     }
-    *n_classes++;
 }
 
 int main(int argc, char **argv)
