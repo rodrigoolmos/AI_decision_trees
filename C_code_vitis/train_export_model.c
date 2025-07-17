@@ -216,7 +216,7 @@ int main() {
     tree_data trees_population[POPULATION][N_TREES][N_NODE_AND_LEAFS] = {0};
     tree_data golden_tree[N_TREES][N_NODE_AND_LEAFS] = {0};
 
-    char *path ="/home/rodrigo/Documents/AI_decision_trees/datasets/indra/caracterizacion_frec.csv";
+    char *path ="/home/rodrigo/Documents/AI_decision_trees/datasets/kaggle/binary/Heart_Attack.csv";
 
     printf("Training model %s\n", path);
     int n_features;
@@ -230,7 +230,7 @@ int main() {
                                     max_features, min_features, features_augmented,
                                     MAX_TEST_SAMPLES*10, 0);
 
-    read_samples /= 50; // reduce the amount of samples 
+    //read_samples /= 10; // reduce the amount of samples 
 
     for (size_t boosting_i = 0; boosting_i < N_TREES / N_BOOSTING; boosting_i++){
         used_trees = (boosting_i + 1)*N_BOOSTING;
@@ -238,7 +238,7 @@ int main() {
         shuffle(features_augmented, read_samples);
 
         for (uint32_t p = 0; p < POPULATION; p++)
-            generate_rando_trees(trees_population[p], n_features, boosting_i,
+            generate_random_trees(trees_population[p], n_features, boosting_i,
                                     max_features, min_features, n_classes);
 
         while(1){
@@ -249,7 +249,7 @@ int main() {
                             read_samples * 80/100, &population_accuracy[p], 0, &used_trees, n_classes);
             }
             gettimeofday(&end_predictions, NULL);
-            reorganize_population(population_accuracy, trees_population);
+            reorganize_population(population_accuracy, trees_population, used_trees);
 
             /////////////////////////////// tests ///////////////////////////////
             //show_logs(population_accuracy);

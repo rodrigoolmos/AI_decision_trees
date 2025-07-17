@@ -138,8 +138,8 @@ int main() {
 
     tree_data trees[N_TREES][N_NODE_AND_LEAFS] = {0};
 
-    char *features_path = "/home/rodrigo/Documents/AI_decision_trees/datasets/indra/caracterizacion_frec.csv";
-    char *model_path = "/home/rodrigo/Documents/AI_decision_trees/trained_models/caracterizacion_frec.bin";
+    char *features_path = "/home/rodrigo/Documents/AI_decision_trees/datasets/SoA/paper0/ecoli_M.csv";
+    char *model_path = "/home/rodrigo/Documents/AI_decision_trees/trained_models/model.bin";
 
     printf("Executing model %s\n", model_path);
     printf("Executing dataset %s\n", features_path);
